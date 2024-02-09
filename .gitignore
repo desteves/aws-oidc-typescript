@@ -130,4 +130,5 @@ dist
 .pnp.*
 
 
-**npm_modules
+**npm_modulestest
+test

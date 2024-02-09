@@ -1,6 +1,6 @@
 # aws-oidc-typescript 🚧🦺🏗️ WORK IN PROGRESS
 
-A Pulumi template to create required AWS resources to set up ESC in the Pulumi Cloud.
+A Pulumi template to quickly create AWS resources for AWS OIDC in a new Pulumi Cloud ESC Environment
 
 The template lives in the `infra/` subfolder
 

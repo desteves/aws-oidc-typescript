@@ -9,7 +9,7 @@ const audience = pulumi.getOrganization();
 const config = new pulumi.Config();
 const oidcIdpUrl: string = config.require('oidcIdpUrl');
 const thumbprint: string = config.require('thumbprint');
-const escEnv: string = config.require('escEnv');
+export const escEnv: string = config.require('escEnv');
 
 // Create an AWS IAM OIDC Identity Provider.
 // TODO - if the OIDC provider already exists, we should use it instead of creating a new one

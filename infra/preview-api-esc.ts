@@ -4,6 +4,7 @@ import axios from 'axios';
 // BUT IT'S THE BEST WE CAN DO FOR NOW
 // UNTIL PULUMI SUPPORTS THIS FUNCTIONALITY
 // https://www.pulumi.com/docs/pulumi-cloud/cloud-rest-api/#create-environment
+// https://github.com/pulumi/pulumi-pulumiservice/issues/225
 export default function createESCEnvironment(data: string, organization:string, environment:string, token:string): void {
     
     const headers = {

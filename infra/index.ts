@@ -12,6 +12,9 @@ const thumbprint: string = config.require('thumbprint');
 const escEnv: string = config.require('escEnv');
 
 // Create an AWS IAM OIDC Identity Provider.
+// TODO - if the OIDC provider already exists, we should use it instead of creating a new one
+
+
 const oidcProvider = new aws.iam.OpenIdConnectProvider("oidcProvider", {
     clientIdLists: [audience],
     url: oidcIdpUrl, // Replace with your IdP URL

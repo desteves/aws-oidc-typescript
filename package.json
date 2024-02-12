@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@pulumi/aws": "^6.21.0",
-    "@pulumi/pulumiservice": "^0.17.0",
-    "axios": "^1.6.7",
-    "yaml": "^2.3.4"
-  }
-}

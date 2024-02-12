@@ -14,10 +14,24 @@ export default function createESCEnvironment(data: string, organization:string, 
     };
 
     axios.post(`https://api.pulumi.com/api/preview/environments/${organization}/${environment}`, data, { headers })
-        .then(response => {
-            console.log(response.data);
-        })
         .catch(error => {
+            if (error.response) {
+                if (error.response.status === 401) {
+                    console.error('Unauthorized: Please check your Pulumi access token');
+                } else if (error.response.status === 409) {
+                    console.error('ESC Environment already exists');
+                    // console.error('Updating existing ESC Environment');
+                    // axios.patch(`https://api.pulumi.com/api/preview/environments/${organization}/${environment}`, data, { headers })
+                    //     .then(response => {
+                    //         console.log(response.data);
+                    //     })
+                    //     .catch(error => {
+                    //         console.error(error.toString());
+                    //     });
+                } else if (error.response.status === 400) {
+                    console.error('Check your YAML configuration');
+                }
+            }
             console.error(error.toString());
         });
 }

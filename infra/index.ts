@@ -39,30 +39,31 @@ const accessToken = new pulumiservice.AccessToken("myAccessToken", {
     description: "Used to create an ESC Environment for AWS OIDC",
 }, { dependsOn: [role] });
 
-accessToken.id.apply(tokenId => {
-
-    const yamlStr = stringify(pulumi.jsonStringify(
-        {
-            "values": {
-                "aws": {
-                    "login": {
-                        "fn::open::aws-login": {
-                            "oidc": {
-                                "duration": "1h",
-                                "roleArn": pulumi.interpolate`${role.arn}`,
-                                "sessionName": "pulumi-environments-session"
+accessToken.value.apply(tokenId => {
+    role.arn.apply(arn => {
+        const yamlStr = stringify(
+            {
+                "values": {
+                    "aws": {
+                        "login": {
+                            "fn::open::aws-login": {
+                                "oidc": {
+                                    "duration": "1h",
+                                    "roleArn": `${arn}`,
+                                    "sessionName": "pulumi-environments-session"
+                                }
                             }
                         }
+                    },
+                    "environmentVariables": {
+                        "AWS_ACCESS_KEY_ID": "${aws.login.accessKeyId}",
+                        "AWS_SECRET_ACCESS_KEY": "${aws.login.secretAccessKey}",
+                        "AWS_SESSION_TOKEN": "${aws.login.sessionToken}"
                     }
                 },
-                "environmentVariables": {
-                    "AWS_ACCESS_KEY_ID": "${aws.login.accessKeyId}",
-                    "AWS_SECRET_ACCESS_KEY": "${aws.login.secretAccessKey}",
-                    "AWS_SESSION_TOKEN": "${aws.login.sessionToken}"
-                }
             }
-        }
-    ))
-
-    createESCEnvironment(yamlStr, audience, escEnv, tokenId);
+        );
+        createESCEnvironment(yamlStr, audience, escEnv, tokenId);
+    });
 });
+

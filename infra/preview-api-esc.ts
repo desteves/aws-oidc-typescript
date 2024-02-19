@@ -9,52 +9,18 @@ export default function upsertEnvironment(data: string, organization: string, en
 
     const headers = {
         'Accept': 'application/vnd.pulumi+8',
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
         'Authorization': `token ${token}`,
     };
-
-    axios.get(`https://api.pulumi.com/api/preview/environments/${organization}/${environment}`, { headers })
-        .then(response => {
-            if (response.status === 200) {
-                console.log("!! Whoops a found an existing Environment, updating it...")
-
-                axios.patch(`https://api.pulumi.com/api/preview/environments/${organization}/${environment}`, data, { headers })
-                    .then(response => {
-                        console.log(response.status);
-                    })
-                    .catch(error => {
-                        if (error.response) {
-                            if (error.response.status === 401) {
-                                console.error('Unauthorized: Please check your Pulumi access token');
-                            } else if (error.response.status === 409) {
-                                console.error('ESC Environment already exists');
-                            } else if (error.response.status === 400) {
-                                console.error('Check your YAML configuration');
-                            }
-                        }
-                        console.error(error.toString());
-                    });
-            }
-        }).catch(error => {
-            if (error.response) {
-                if (error.response.status === 401) {
-                    console.error('Unauthorized: Please check your Pulumi access token');
-                } else if (error.response.status == 404) {
-                    axios.post(`https://api.pulumi.com/api/preview/environments/${organization}/${environment}`, data, { headers })
-                        .catch(error => {
-                            if (error.response) {
-                                if (error.response.status === 401) {
-                                    console.error('Unauthorized: Please check your Pulumi access token');
-                                } else if (error.response.status === 409) {
-                                    console.error('ESC Environment already exists');
-                                } else if (error.response.status === 400) {
-                                    console.error('Check your YAML configuration');
-                                }
-                            }
-                            console.error(error.toString());
-                        });
-                }
-            }
+    // Doing a POST request to create the environment followed by a PATCH because of previews.
+    axios.post(`https://api.pulumi.com/api/preview/environments/${organization}/${environment}`, data, { headers })
+        .catch(error => {
+          //  console.log("Error creating ESC Environment: " + environment);
         })
+        .finally(() => {
+            axios.patch(`https://api.pulumi.com/api/preview/environments/${organization}/${environment}`, data, { headers })
+                .then(response => {
+                    console.log("Created ESC Environment: " + environment);
+                });
+        });
 }
-

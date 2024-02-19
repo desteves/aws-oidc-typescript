@@ -3,7 +3,6 @@ import * as pulumiservice from "@pulumi/pulumiservice";
 import * as aws from "@pulumi/aws";
 import { stringify } from 'yaml'
 import upsertEnvironment from './preview-api-esc';
-import { exit } from "process";
 
 // Configurations
 const audience = pulumi.getOrganization();
@@ -13,20 +12,18 @@ const thumbprint: string = config.require('thumbprint');
 export const escEnv: string = config.require('escEnv');
 
 
-// Check if resource already exists under the provided AWS Account.
-try {
-    aws.iam.getOpenIdConnectProvider({
-        url: oidcIdpUrl,
-    }).then(temp => {
-        console.log("!! Whoops a conflict has been detected; import your existing OIDC Provider")
-        console.log("pulumi import aws:iam/openIdConnectProvider:OpenIdConnectProvider default ", temp.arn)
-        exit(1)
-    });
-} catch {
+// // Check if resource already exists under the provided AWS Account.
+//     aws.iam.getOpenIdConnectProvider({
+//         url: oidcIdpUrl,
+//     }).then(temp => {
+//         console.log("Ensure you imported your existing OIDC Provider");
+//         console.log("pulumi import aws:iam/openIdConnectProvider:OpenIdConnectProvider oidcProvider", temp.arn, "--yes")
 
-}
 
-// !! If importing an existing oidc provider, update the below resource accordingly
+// !! If importing an existing OIDC Provider:
+// - Copy the resource definition AS-IS. Then, run `pulumi up`.
+// - Update the rerource to include your audience, if missing. Then, run `pulumi up`
+
 // Create a new OIDC Provider
 const oidcProvider = new aws.iam.OpenIdConnectProvider("oidcProvider", {
     clientIdLists: [audience],
@@ -45,11 +42,10 @@ const role = new aws.iam.Role("oidcProviderRole", {
             Condition: { StringEquals: { [`${url}:aud`]: [audience] } },
         }],
     })),
-});
+}, { dependsOn: [oidcProvider] });
 
 // TODO - attach other policies to the role as needed
 try {
-    console.log("Attempting to give the role an AdministratorAccess policy.")
     new aws.iam.RolePolicyAttachment("oidcProviderRolePolicyAttachment", {
         role: role,
         policyArn: "arn:aws:iam::aws:policy/AdministratorAccess",
@@ -67,7 +63,7 @@ const accessToken = new pulumiservice.AccessToken("myAccessToken", {
 
 accessToken.value.apply(tokenId => {
     role.arn.apply(arn => {
-        const yamlStr = stringify(
+        let yamlStr = stringify(
             {
                 "values": {
                     "aws": {
@@ -89,6 +85,8 @@ accessToken.value.apply(tokenId => {
                 },
             }
         );
+       
+        yamlStr = yamlStr + '\n';
         upsertEnvironment(yamlStr, audience, escEnv, tokenId);
     });
 });

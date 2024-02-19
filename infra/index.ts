@@ -2,7 +2,8 @@ import * as pulumi from "@pulumi/pulumi";
 import * as pulumiservice from "@pulumi/pulumiservice";
 import * as aws from "@pulumi/aws";
 import { stringify } from 'yaml'
-import createESCEnvironment from './preview-api-esc';
+import upsertEnvironment from './preview-api-esc';
+import { exit } from "process";
 
 // Configurations
 const audience = pulumi.getOrganization();
@@ -11,10 +12,22 @@ const oidcIdpUrl: string = config.require('oidcIdpUrl');
 const thumbprint: string = config.require('thumbprint');
 export const escEnv: string = config.require('escEnv');
 
-// Create an AWS IAM OIDC Identity Provider.
-// TODO - if the OIDC provider already exists, we should use it instead of creating a new one
 
+// Check if resource already exists under the provided AWS Account.
+try {
+    aws.iam.getOpenIdConnectProvider({
+        url: oidcIdpUrl,
+    }).then(temp => {
+        console.log("!! Whoops a conflict has been detected; import your existing OIDC Provider")
+        console.log("pulumi import aws:iam/openIdConnectProvider:OpenIdConnectProvider default ", temp.arn)
+        exit(1)
+    });
+} catch {
 
+}
+
+// !! If importing an existing oidc provider, update the below resource accordingly
+// Create a new OIDC Provider
 const oidcProvider = new aws.iam.OpenIdConnectProvider("oidcProvider", {
     clientIdLists: [audience],
     url: oidcIdpUrl, // Replace with your IdP URL
@@ -35,12 +48,19 @@ const role = new aws.iam.Role("oidcProviderRole", {
 });
 
 // TODO - attach other policies to the role as needed
-const rolePolicyAttachment = new aws.iam.RolePolicyAttachment("oidcProviderRolePolicyAttachment", {
-    role: role,
-    policyArn: "arn:aws:iam::aws:policy/AdministratorAccess",
-});
+try {
+    console.log("Attempting to give the role an AdministratorAccess policy.")
+    new aws.iam.RolePolicyAttachment("oidcProviderRolePolicyAttachment", {
+        role: role,
+        policyArn: "arn:aws:iam::aws:policy/AdministratorAccess",
+    });
+} catch (error) {
+    console.warn("Unable to attach the AdministratorAccess policy to the " + role.name)
+} finally {
+    console.log("Please add/remove policies as necessary.")
+}
 
-// Create a new Pulumi Cloud access token to be used to create the environment
+// Create a new Pulumi Cloud access token to be used to create the Environment
 const accessToken = new pulumiservice.AccessToken("myAccessToken", {
     description: "Used to create an ESC Environment for AWS OIDC",
 }, { dependsOn: [role] });
@@ -69,7 +89,6 @@ accessToken.value.apply(tokenId => {
                 },
             }
         );
-        createESCEnvironment(yamlStr, audience, escEnv, tokenId);
+        upsertEnvironment(yamlStr, audience, escEnv, tokenId);
     });
 });
-

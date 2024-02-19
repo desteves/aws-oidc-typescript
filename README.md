@@ -1,4 +1,6 @@
-# aws-oidc-typescript 🚧🦺🏗️ WORK IN PROGRESS
+# aws-oidc-typescript
+
+Last update: February 2024
 
 A Pulumi template to quickly create AWS resources for AWS OIDC in a new Pulumi Cloud ESC Environment
 
@@ -12,18 +14,19 @@ To get your thumbprint quickly, run:
 docker run --platform linux/amd64  nullstring/oidc-thumbprint-finder https://api.pulumi.com/oidc
 ```
 
-To use the template
+To use this template
 
 ```bash
 # copy the template (feel free to change the output dir)
-pulumi new https://github.com/desteves/aws-oidc-typescript/infra --dir test --force
+OUTPUT_DIR=test
+pulumi new https://github.com/desteves/aws-oidc-typescript/infra --dir ${OUTPUT_DIR} --force
 # complete the prompts
 
 # create the resources
-pulumi up --cwd test --yes
+pulumi up --cwd ${OUTPUT_DIR} --yes
 
 # clean up
-pulumi destroy --cwd test --yes --remove
+pulumi destroy --cwd ${OUTPUT_DIR} --yes --remove
 ```
 
 ## Reference Material

@@ -11,24 +11,32 @@ const oidcIdpUrl: string = config.require('oidcIdpUrl');
 const thumbprint: string = config.require('thumbprint');
 export const escEnv: string = config.require('escEnv');
 
-
-// // Check if resource already exists under the provided AWS Account.
-//     aws.iam.getOpenIdConnectProvider({
-//         url: oidcIdpUrl,
-//     }).then(temp => {
-//         console.log("Ensure you imported your existing OIDC Provider");
-//         console.log("pulumi import aws:iam/openIdConnectProvider:OpenIdConnectProvider oidcProvider", temp.arn, "--yes")
-
-
-// !! If importing an existing OIDC Provider:
-// - Copy the resource definition AS-IS. Then, run `pulumi up`.
-// - Update the rerource to include your audience, if missing. Then, run `pulumi up`
+////// Solve ////////////////////////////////////////
+// aws:iam:OpenIdConnectProvider (oidcProvider):
+// error: 1 error occurred:
+//     * creating IAM OIDC Provider: EntityAlreadyExists: Provider with url https://api.pulumi.com/oidc already exists.
+//     status code: 409, request id: 7edf2c50-559a-43cc-a682-f50a40c470bd
+// 1. UNCOMMENT THE BELOW CODE SNIPPET
+// aws.iam.getOpenIdConnectProvider({
+//     url: oidcIdpUrl,
+// }).then(temp => {
+//     console.log("Ensure you imported your existing OIDC Provider");
+//     console.log("pulumi import aws:iam/openIdConnectProvider:OpenIdConnectProvider oidcProvider", temp.arn, "--yes")
+// });
+// 2. RUN `pulumi preview`
+// 3. COPY THE `pulumi import` COMMAND FROM THE CONSOLE AND RUN IT
+// 4. COMMENT THE ABOVE CODE SNIPPET
+// 5. REPLACE THE RESOURCE DEFINITION BELOW TO THAT OF THE CONSOLE
+// 6. RUN `pulumi up`
+////////////////////////////////////////`
 
 // Create a new OIDC Provider
 const oidcProvider = new aws.iam.OpenIdConnectProvider("oidcProvider", {
     clientIdLists: [audience],
     url: oidcIdpUrl, // Replace with your IdP URL
     thumbprintLists: [thumbprint], // Replace with the thumbprint of the IdP server's certificate
+}, {
+    protect: true,
 });
 
 // Create a new role that can be assumed by the OIDC provider
@@ -85,7 +93,7 @@ accessToken.value.apply(tokenId => {
                 },
             }
         );
-       
+
         yamlStr = yamlStr + '\n';
         upsertEnvironment(yamlStr, audience, escEnv, tokenId);
     });

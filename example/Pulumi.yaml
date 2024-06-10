@@ -1,0 +1,13 @@
+name: ${PROJECT}
+description: ${DESCRIPTION}
+runtime: nodejs
+
+template:
+  description: A minimal TypeScript Pulumi program to test AWS OIDC+Pulumi Cloud+ESC
+  config:
+    aws:region:
+      description: The AWS region to deploy into
+      default: us-west-2
+    stackRefName:
+      description: The name of your Pulumi Stack used to create the AWS OIDC Resources
+      default: orgName/projectName/stackName

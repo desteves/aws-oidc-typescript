@@ -1,11 +1,13 @@
-# aws-oidc-typescript
+# aws-oidc-typescript Pulumi template
 
-Last update: February 2024
+A Pulumi template to quickly create AWS OIDC resources + configure a Pulumi Cloud ESC Environment with such.
 
-A Pulumi template to quickly create AWS resources for AWS OIDC in a new Pulumi Cloud ESC Environment
+*Last update: February 2024*
 
-The template lives in the `infra/` subfolder
+- The template lives in the `infra/` subfolder.
+- To test the template clone the `test/` subfolder.
 
+## Thumbprint OIDC finder
 
 To get your thumbprint quickly, run:
 
@@ -14,23 +16,33 @@ To get your thumbprint quickly, run:
 docker run --platform linux/amd64  nullstring/oidc-thumbprint-finder https://api.pulumi.com/oidc
 ```
 
-To use this template
+## To use the template to **CREATE** all the resources
 
 ```bash
 # copy the template (feel free to change the output dir)
-OUTPUT_DIR=test
-pulumi new https://github.com/desteves/aws-oidc-typescript/infra --dir ${OUTPUT_DIR} --force
+$ OUTPUT_DIR=aws-oidc-typescript
+$ pulumi new https://github.com/desteves/aws-oidc-typescript/infra --dir ${OUTPUT_DIR} --force
 # complete the prompts
 
 # create the resources
-pulumi up --cwd ${OUTPUT_DIR} --yes
+$ pulumi up --cwd ${OUTPUT_DIR} --yes
 
 # clean up
-pulumi destroy --cwd ${OUTPUT_DIR} --yes --remove
+$ pulumi destroy --cwd ${OUTPUT_DIR} --yes --remove
 ```
 
-## Reference Material
 
-Based on the Python version at
-https://github.com/pulumi/examples/tree/master/aws-py-oidc-provider-pulumi-cloud#readme
-so follow those instructions!
+## To use the template to **TEST** all the resources
+
+```bash
+# copy the template (feel free to change the output dir)
+$ OUTPUT_DIR=example
+$ pulumi new https://github.com/desteves/aws-oidc-typescript/example --dir ${OUTPUT_DIR} --force
+# complete the prompts
+
+# create the resources
+$ pulumi up --cwd ${OUTPUT_DIR} --yes
+
+# clean up
+$ pulumi destroy --cwd ${OUTPUT_DIR} --yes --remove
+```
